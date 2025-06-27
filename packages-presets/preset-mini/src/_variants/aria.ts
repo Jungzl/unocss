@@ -35,6 +35,7 @@ function taggedAria(tagName: string): Variant {
         }
       }
     },
+    multiPass: true,
   }
 }
 

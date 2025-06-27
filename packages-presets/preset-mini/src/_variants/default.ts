@@ -46,7 +46,7 @@ export function variants(options: PresetMiniOptions): Variant<Theme>[] {
 
     variantContainerQuery,
     variantVariables,
-    ...variantTaggedDataAttributes,
+    ...variantTaggedDataAttributes(options),
     ...variantTaggedAriaAttributes,
 
     variantTheme,

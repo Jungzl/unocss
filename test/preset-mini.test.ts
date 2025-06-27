@@ -1,5 +1,7 @@
 import { createGenerator, escapeSelector } from '@unocss/core'
 import presetMini from '@unocss/preset-mini'
+import parserCSS from 'prettier/parser-postcss'
+import prettier from 'prettier/standalone'
 import { describe, expect, it } from 'vitest'
 import { presetMiniNonTargets, presetMiniTargets, specialPresetMiniTargets } from './assets/preset-mini-targets'
 import { targets } from './assets/preset-wind3-targets'
@@ -504,6 +506,88 @@ describe('preset-mini', () => {
       @container name (min-width: 768px){
       .\\@desktop\\/name\\:text-lg{font-size:1.125rem;line-height:1.75rem;}
       }"
+    `)
+  })
+
+  it('pseudo selector with hyphen name', async () => {
+    const uno = await createGenerator({
+      separators: [':'],
+      presets: [
+        presetMini({ preflight: false }),
+      ],
+    })
+
+    const classes = [
+      'group-data-[x=y]/named-h:ml-4',
+      'group-data-[x=y]/named-hover:ml-4',
+      'group-data-[x=y]/named:hover:ml-4',
+    ]
+
+    const { css } = await uno.generate(classes)
+
+    const unmatched = classes.filter(cls => !css.includes(escapeSelector(cls)))
+    expect(unmatched).toEqual([
+    ])
+
+    await expect(css).toMatchInlineSnapshot(`
+      "/* layer: default */
+      .group\\/named-h[data-x=y] .group-data-\\[x\\=y\\]\\/named-h\\:ml-4,
+      .group\\/named-hover[data-x=y] .group-data-\\[x\\=y\\]\\/named-hover\\:ml-4{margin-left:1rem;}
+      .group\\/named[data-x=y] .group-data-\\[x\\=y\\]\\/named\\:hover\\:ml-4:hover{margin-left:1rem;}"
+    `)
+  })
+
+  // https://github.com/unocss/unocss/issues/4589
+  it('nested pseudo selectors', async () => {
+    const uno = await createGenerator({
+      separators: [':'],
+      presets: [
+        presetMini({ preflight: false }),
+      ],
+    })
+
+    /**
+     * - [tw3](https://play.tailwindcss.com/yL5S55FLVd)
+     * - [tw4](https://play.tailwindcss.com/1uWuSBWmzQ)
+     */
+    const classes = [
+      'group-data-[state=collapsed]:group-data-[variant=inset]:ml-2', // ✅✅
+      'group-data-[state=collapsed]/named:group-data-[variant=inset]:ml-2', // ✅✅
+      'group-data-[state=collapsed]:group-data-[variant=inset]/named:ml-2', // ✅✅
+      // 'group-data-[state=collapsed]:peer-data-[variant=inset]:ml-2', // ✅✅
+      // 'group-data-[state=collapsed]:has-data-[variant=inset]:ml-2', // ❎✅
+      // 'peer-data-[state=collapsed]:group-data-[variant=inset]:ml-2', // ✅✅
+      // 'peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2', // ✅✅
+      // 'peer-data-[state=collapsed]:has-data-[variant=inset]:ml-2', // ❎✅
+      // 'has-data-[state=collapsed]:group-data-[variant=inset]:ml-2', // ❎✅
+      // 'has-data-[state=collapsed]:peer-data-[variant=inset]:ml-2', // ❎✅
+      // 'has-data-[state=collapsed]:has-data-[variant=inset]:ml-2', // ❎✅
+      // 'has-data-[state=collapsed]:ml-4', // ❎✅
+    ]
+
+    const { css } = await uno.generate(classes)
+
+    const unmatched = classes.filter(cls => !css.includes(escapeSelector(cls)))
+    expect(unmatched).toEqual([])
+
+    const prettified = prettier.format(css, {
+      parser: 'css',
+      plugins: [parserCSS],
+    })
+
+    await expect(prettified).toMatchInlineSnapshot(`
+      "/* layer: default */
+      .group[data-state="collapsed"]
+        .group\\/named[data-variant="inset"]
+        .group-data-\\[state\\=collapsed\\]\\:group-data-\\[variant\\=inset\\]\\/named\\:ml-2,
+      .group\\/named[data-state="collapsed"]
+        .group[data-variant="inset"]
+        .group-data-\\[state\\=collapsed\\]\\/named\\:group-data-\\[variant\\=inset\\]\\:ml-2,
+      .group[data-state="collapsed"][data-variant="inset"]
+        .group-data-\\[state\\=collapsed\\]\\:group-data-\\[variant\\=inset\\]\\:ml-2 {
+        margin-left: 0.5rem;
+      }
+      "
     `)
   })
 })
