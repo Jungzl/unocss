@@ -468,4 +468,48 @@ describe('preset-wind4', () => {
       "
     `)
   })
+
+  it('composable pseudo selectors', async () => {
+    const uno = await createGenerator({
+      presets: [
+        presetWind4({
+          preflights: { reset: false },
+        }),
+      ],
+    })
+
+    const classes = [
+      'm-4',
+      'checked:m-4',
+      'peer-checked:m-4',
+      'group-peer-checked:m-4',
+    ]
+
+    const { css } = await uno.generate(classes)
+    const unmatched = classes.filter(cls => !css.includes(escapeSelector(cls)))
+    expect(unmatched).toEqual(['group-peer-checked:m-4'])
+
+    const prettified = prettier.format(css, {
+      printWidth: 120,
+      parser: 'css',
+      plugins: [parserCSS],
+    })
+
+    expect(prettified).toMatchInlineSnapshot(`
+      "/* layer: theme */
+      :root,
+      :host {
+        --spacing: 0.25rem;
+      }
+      /* layer: default */
+      .m-4,
+      .peer:checked ~ .peer-checked\\:m-4 {
+        margin: calc(var(--spacing) * 4);
+      }
+      .checked\\:m-4:checked {
+        margin: calc(var(--spacing) * 4);
+      }
+      "
+    `)
+  })
 })
