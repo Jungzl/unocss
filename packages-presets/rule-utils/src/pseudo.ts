@@ -1,7 +1,7 @@
 import type { VariantObject } from '@unocss/core'
 import type { getBracket } from './utilities'
 import type { variantGetBracket } from './variants'
-import { escapeRegExp, escapeSelector } from '@unocss/core'
+import { escapeRegExp, escapeSelector, toArray } from '@unocss/core'
 
 const PseudoPlaceholder = '__pseudo_placeholder__'
 
@@ -372,8 +372,7 @@ export function createTaggedPseudoClasses<T extends object = object>(
   utils: PseudoVariantUtilities,
 ): VariantObject<T>[] {
   const attributify = !!options?.attributifyPseudo
-  let firstPrefix = options?.prefix ?? ''
-  firstPrefix = (Array.isArray(firstPrefix) ? firstPrefix : [firstPrefix]).filter(Boolean)[0] ?? ''
+  const firstPrefix = toArray(options?.prefix ?? '').filter(Boolean)[0] ?? ''
   const tagWithPrefix = (tag: string, combinator: string) => createTaggedPseudoClassMatcher<T>(tag, attributify ? `[${firstPrefix}${tag}=""]` : `.${firstPrefix}${tag}`, combinator, utils)
 
   return [
