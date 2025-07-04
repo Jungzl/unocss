@@ -108,11 +108,21 @@ export function createTaggedPseudoClassMatcher<T extends object = object>(
 
       return {
         matcher,
-        handle: (input, next) => next({
-          ...input,
-          prefix: `${prefix}${combinator}${input.prefix}`.replace(rawRE, '$1$2:'),
-          sort: PseudoClassesKeys.indexOf(pseudoName) ?? PseudoClassesColonKeys.indexOf(pseudoName),
-        }),
+        handle: (input, next) => {
+          if (tag === 'peer') {
+            return next({
+              ...input,
+              parent: `${input.parent ? `${input.parent} $$ ` : ''}${input.selector}`,
+              selector: `&:is(${`${prefix}`.replace(new RegExp(`^(${escapeRegExp(parent)})(\\S+)`), ':where($1)$2')}${escapeRegExp(combinator)}*)`,
+            })
+          }
+
+          return next({
+            ...input,
+            prefix: `${prefix}${combinator}${input.prefix}`.replace(rawRE, '$1$2:'),
+            sort: PseudoClassesKeys.indexOf(pseudoName) ?? PseudoClassesColonKeys.indexOf(pseudoName),
+          })
+        },
       }
     },
     multiPass: true,

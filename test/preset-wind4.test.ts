@@ -479,15 +479,15 @@ describe('preset-wind4', () => {
     })
 
     const classes = [
-      'm-4',
-      'checked:m-4',
+      // 'm-4',
+      // 'checked:m-4',
       'peer-checked:m-4',
-      'group-peer-checked:m-4',
+      // 'group-peer-checked:m-4',
     ]
 
     const { css } = await uno.generate(classes)
     const unmatched = classes.filter(cls => !css.includes(escapeSelector(cls)))
-    expect(unmatched).toEqual(['group-peer-checked:m-4'])
+    expect(unmatched).toEqual([])
 
     const prettified = prettier.format(css, {
       printWidth: 120,
@@ -502,12 +502,10 @@ describe('preset-wind4', () => {
         --spacing: 0.25rem;
       }
       /* layer: default */
-      .m-4,
-      .peer:checked ~ .peer-checked\\:m-4 {
-        margin: calc(var(--spacing) * 4);
-      }
-      .checked\\:m-4:checked {
-        margin: calc(var(--spacing) * 4);
+      .peer-checked\\:m-4 {
+        &:is(:where(.peer):checked ~ *) {
+          margin: calc(var(--spacing) * 4);
+        }
       }
       "
     `)

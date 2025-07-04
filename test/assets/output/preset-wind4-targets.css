@@ -237,9 +237,6 @@
 .text-sm\/3{font-size:var(--text-sm-fontSize);line-height:0.75rem;}
 .dark .\.dark\:text-xl,
 .dark .dark\:text-xl{font-size:var(--text-xl-fontSize);line-height:var(--un-leading, var(--text-xl-lineHeight));}
-.peer:not(:placeholder-shown)~.peer-not-placeholder-shown\:text-2xl{font-size:var(--text-2xl-fontSize);line-height:var(--un-leading, var(--text-2xl-lineHeight));}
-.peer:is(:placeholder-shown)~.peer-is-placeholder-shown\:text-3xl,
-.peer:not(:placeholder-shown)~.peer-not-placeholder-shown\:text-3xl{font-size:var(--text-3xl-fontSize);line-height:var(--un-leading, var(--text-3xl-lineHeight));}
 .font-size-1\.5rem{font-size:1.5rem;}
 .text-size-1em{font-size:1em;}
 .text-size-unset{font-size:unset;}
@@ -411,7 +408,6 @@
 .text-shadow-color-op-30{--un-text-shadow-opacity:30%;}
 .group:not([data-potato]) .group-not-\[\[data-potato\]\]\:m-1,
 .parent:not(#someId)>.parent-not-\[\#someId\]\:m-1,
-.peer:where(.child)~.peer-where-\[\.child\]\:m-1,
 .previous:is(div)+.previous-is-\[div\]\:m-1,
 .has-\[\:hover\]\:m-1:has(:hover){margin:calc(var(--spacing) * 1);}
 .m--lg{margin:calc(var(--spacing) * -4.5);}
@@ -726,7 +722,6 @@
 .marker\:bg-violet-200 *::marker,
 .marker\:bg-violet-200::marker{background-color:color-mix(in srgb, var(--colors-violet-200) var(--un-bg-opacity), transparent) /* oklch(89.4% 0.057 293.283) */;}
 .first-line\:bg-green-400::first-line{background-color:color-mix(in srgb, var(--colors-green-400) var(--un-bg-opacity), transparent) /* oklch(79.2% 0.209 151.711) */;}
-.peer:checked~.peer-checked\:bg-blue-500{background-color:color-mix(in srgb, var(--colors-blue-500) var(--un-bg-opacity), transparent) /* oklch(62.3% 0.214 259.815) */;}
 .previous\/label:checked+.previous-checked\/label\:bg-red-500{background-color:color-mix(in srgb, var(--colors-red-500) var(--un-bg-opacity), transparent) /* oklch(63.7% 0.237 25.331) */;}
 .focus-within\:has-first\:checked\:bg-gray\/20:checked:has(:first-child):focus-within{background-color:color-mix(in srgb, var(--colors-gray-DEFAULT) 20%, transparent) /* oklch(70.7% 0.022 261.325) */;}
 .focus-within\:where-first\:checked\:bg-gray\/20:checked:where(:first-child):focus-within{background-color:color-mix(in srgb, var(--colors-gray-DEFAULT) 20%, transparent) /* oklch(70.7% 0.022 261.325) */;}
@@ -1096,7 +1091,6 @@ unocss .scope-\[unocss\]\:block{display:block;}
 .translate-y-1\/2{--un-translate-y:50%;translate:var(--un-translate-x) var(--un-translate-y);}
 .translate-y-1\/4{--un-translate-y:25%;translate:var(--un-translate-x) var(--un-translate-y);}
 .translate-y-px{--un-translate-y:1px;translate:var(--un-translate-x) var(--un-translate-y);}
-.peer:checked~.peer-checked\:translate-x-\[var\(--reveal\)\]{--un-translate-x:var(--reveal);translate:var(--un-translate-x) var(--un-translate-y);}
 .hover\:translate-x-3:hover{--un-translate-x:calc(var(--spacing) * 3);translate:var(--un-translate-x) var(--un-translate-y);}
 .before\:translate-y-full::before{--un-translate-y:100%;translate:var(--un-translate-x) var(--un-translate-y);}
 .rotate-\[var\(--spin\)\]{rotate:var(--spin);}
@@ -1774,11 +1768,29 @@ unocss .scope-\[unocss\]\:block{display:block;}
 .peer-aria-checked\:bg-blue-500{
 &:is(:where(.peer)[aria-checked="true"] ~ *){background-color:color-mix(in srgb, var(--colors-blue-500) var(--un-bg-opacity), transparent) /* oklch(62.3% 0.214 259.815) */;}
 }
+.peer-checked\:bg-blue-500{
+&:is(:where(.peer):checked~*){background-color:color-mix(in srgb, var(--colors-blue-500) var(--un-bg-opacity), transparent) /* oklch(62.3% 0.214 259.815) */;}
+}
+.peer-checked\:translate-x-\[var\(--reveal\)\]{
+&:is(:where(.peer):checked~*){--un-translate-x:var(--reveal);translate:var(--un-translate-x) var(--un-translate-y);}
+}
 .peer-data-\[state\=closed\]\:border-3{
 &:is(:where(.peer)[data-state=closed] ~ *){border-width:3px;}
 }
 .peer-data-\[x\=y\]\/named\:font-17{
 &:is(:where(.peer\/named)[data-x=y] ~ *){--un-font-weight:17;font-weight:17;}
+}
+.peer-is-placeholder-shown\:text-3xl{
+&:is(:where(.peer):is(:placeholder-shown)~*){font-size:var(--text-3xl-fontSize);line-height:var(--un-leading, var(--text-3xl-lineHeight));}
+}
+.peer-not-placeholder-shown\:text-2xl{
+&:is(:where(.peer):not(:placeholder-shown)~*){font-size:var(--text-2xl-fontSize);line-height:var(--un-leading, var(--text-2xl-lineHeight));}
+}
+.peer-not-placeholder-shown\:text-3xl{
+&:is(:where(.peer):not(:placeholder-shown)~*){font-size:var(--text-3xl-fontSize);line-height:var(--un-leading, var(--text-3xl-lineHeight));}
+}
+.peer-where-\[\.child\]\:m-1{
+&:is(:where(.peer):where(.child)~*){margin:calc(var(--spacing) * 1);}
 }
 .previous-aria-\[level\=\"4\"\]\/named\:hover\:font-21:hover{
 :where(*[aria-level="4"] + &){--un-font-weight:21;font-weight:21;}
@@ -1916,7 +1928,6 @@ unocss .scope-\[unocss\]\:block{display:block;}
 .marker\:bg-violet-200 *::marker{background-color:color-mix(in oklab, var(--colors-violet-200) var(--un-bg-opacity), transparent) /* oklch(89.4% 0.057 293.283) */;}
 .marker\:bg-violet-200::marker{background-color:color-mix(in oklab, var(--colors-violet-200) var(--un-bg-opacity), transparent) /* oklch(89.4% 0.057 293.283) */;}
 .first-line\:bg-green-400::first-line{background-color:color-mix(in oklab, var(--colors-green-400) var(--un-bg-opacity), transparent) /* oklch(79.2% 0.209 151.711) */;}
-.peer:checked~.peer-checked\:bg-blue-500{background-color:color-mix(in oklab, var(--colors-blue-500) var(--un-bg-opacity), transparent) /* oklch(62.3% 0.214 259.815) */;}
 .previous\/label:checked+.previous-checked\/label\:bg-red-500{background-color:color-mix(in oklab, var(--colors-red-500) var(--un-bg-opacity), transparent) /* oklch(63.7% 0.237 25.331) */;}
 .focus-within\:has-first\:checked\:bg-gray\/20:checked:has(:first-child):focus-within{background-color:color-mix(in oklab, var(--colors-gray-DEFAULT) 20%, transparent) /* oklch(70.7% 0.022 261.325) */;}
 .focus-within\:where-first\:checked\:bg-gray\/20:checked:where(:first-child):focus-within{background-color:color-mix(in oklab, var(--colors-gray-DEFAULT) 20%, transparent) /* oklch(70.7% 0.022 261.325) */;}
@@ -1945,6 +1956,9 @@ unocss .scope-\[unocss\]\:block{display:block;}
 }}
 @supports (color: color-mix(in lab, red, red)){.peer-aria-checked\:bg-blue-500{
 &:is(:where(.peer)[aria-checked="true"] ~ *){background-color:color-mix(in oklab, var(--colors-blue-500) var(--un-bg-opacity), transparent) /* oklch(62.3% 0.214 259.815) */;}
+}}
+@supports (color: color-mix(in lab, red, red)){.peer-checked\:bg-blue-500{
+&:is(:where(.peer):checked~*){background-color:color-mix(in oklab, var(--colors-blue-500) var(--un-bg-opacity), transparent) /* oklch(62.3% 0.214 259.815) */;}
 }}
 @supports (color: color-mix(in lab, red, red)){.previous-aria-checked\/label\:bg-red-500{
 :where(*[aria-checked="true"] + &){background-color:color-mix(in oklab, var(--colors-red-500) var(--un-bg-opacity), transparent) /* oklch(63.7% 0.237 25.331) */;}
