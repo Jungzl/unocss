@@ -107,6 +107,8 @@ export const filters: Rule<Theme>[] = [
       'drop-shadow-color',
       'filter-drop-shadow-$dropShadow',
       'drop-shadow-$dropShadow',
+      'filter-drop-shadow-$colors',
+      'drop-shadow-$colors',
       'filter-drop-shadow-color-$colors',
       'drop-shadow-color-$colors',
       'filter-drop-shadow-color-(op|opacity)',

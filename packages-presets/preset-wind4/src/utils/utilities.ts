@@ -299,7 +299,7 @@ export function colorResolver(property: string, varName: string) {
 
 // #endregion
 
-export function colorableShadows(shadows: string | string[], colorVar: string) {
+export function colorableShadows(shadows: string | string[], colorVar: string, percent?: string) {
   const colored = []
   shadows = toArray(shadows)
   for (let i = 0; i < shadows.length; i++) {

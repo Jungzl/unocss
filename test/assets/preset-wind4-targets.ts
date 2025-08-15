@@ -227,6 +227,8 @@ export const presetWind4Targets: string[] = [
   'drop-shadow-[0_4px_3px_#000]',
   'drop-shadow-none',
   'drop-shadow-sm',
+  'drop-shadow-xl/50',
+  'drop-shadow-red-300/30',
   'drop-shadow-color-red-300',
   'drop-shadow-color-op-30',
   'grayscale',
@@ -298,6 +300,7 @@ export const presetWind4Targets: string[] = [
 
   // shadow, spacing
   'shadow-2xs',
+  'shadow-2xs/50',
   'inset-shadow-none',
   'mix-blend-normal',
   'mix-blend-hard-light',

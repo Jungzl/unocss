@@ -28,6 +28,7 @@
 @property --un-inset-ring-color{syntax:"*";inherits:false;}
 @property --un-inset-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}
 @property --un-inset-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}
+@property --un-inset-shadow-alpha{syntax:"<percent>";inherits:false;initial-value:100%;}
 @property --un-inset-shadow-color{syntax:"*";inherits:false;}
 @property --un-ring-color{syntax:"*";inherits:false;}
 @property --un-ring-inset{syntax:"*";inherits:false;}
@@ -36,6 +37,7 @@
 @property --un-ring-offset-width{syntax:"<length>";inherits:false;initial-value:0px;}
 @property --un-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}
 @property --un-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}
+@property --un-shadow-alpha{syntax:"<percent>";inherits:false;initial-value:100%;}
 @property --un-shadow-color{syntax:"*";inherits:false;}
 @property --un-translate-x{syntax:"*";inherits:false;initial-value:0;}
 @property --un-translate-y{syntax:"*";inherits:false;initial-value:0;}
@@ -1061,6 +1063,7 @@ unocss .scope-\[unocss\]\:block{display:block;}
 .shadow-\[0px_4px_4px_0px_rgba\(238_0_0\/1\)\]{--un-shadow:0px 4px 4px 0px var(--un-shadow-color, rgba(238, 0, 0, 1));box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}
 .shadow-\$variable{--un-shadow:var(--variable);box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}
 .shadow-2xs{--un-shadow:0 1px var(--un-shadow-color, rgb(0 0 0 / 0.05));box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}
+.shadow-2xs\/50{--un-shadow-alpha:50%;--un-shadow:0 1px var(--un-shadow-color, rgb(0 0 0 / 0.05));box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}
 .shadow-current{--un-shadow-color:currentColor;}
 .backdrop\:shadow-green::backdrop{--un-shadow-color:color-mix(in srgb, var(--colors-green-DEFAULT) var(--un-shadow-opacity), transparent) /* oklch(79.2% 0.209 151.711) */;}
 .shadow-green-500{--un-shadow-color:color-mix(in srgb, var(--colors-green-500) var(--un-shadow-opacity), transparent) /* oklch(72.3% 0.219 149.579) */;}

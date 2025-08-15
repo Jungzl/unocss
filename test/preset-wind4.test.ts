@@ -99,6 +99,8 @@ describe('preset-wind4', () => {
         "divide-inline-reverse",
         "divide-x-none",
         "divide-inline-none",
+        "drop-shadow-xl/50",
+        "drop-shadow-red-300/30",
         "line-clamp-unset",
         "scroll-m-none",
         "scroll-p-inline-none",
@@ -509,5 +511,49 @@ describe('important', () => {
     ].join(' '), { preflights: false })
 
     await expect(css).toMatchFileSnapshot('./assets/output/preset-wind4-important-string.css')
+  })
+
+  it('shadow with opacity', async () => {
+    const uno = await createGenerator({
+      presets: [
+        presetWind4(),
+      ],
+    })
+
+    const { css } = await uno.generate([
+      'shadow',
+      'shadow/50',
+      'shadow-sm',
+      'shadow-sm/50',
+      'shadow-red-300/30',
+    ].join(' '), { preflights: false })
+
+    await expect(css).toMatchInlineSnapshot(`
+      "/* layer: properties */
+      @property --un-inset-ring-color{syntax:"*";inherits:false;}
+      @property --un-inset-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}
+      @property --un-inset-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}
+      @property --un-inset-shadow-alpha{syntax:"<percent>";inherits:false;initial-value:100%;}
+      @property --un-inset-shadow-color{syntax:"*";inherits:false;}
+      @property --un-ring-color{syntax:"*";inherits:false;}
+      @property --un-ring-inset{syntax:"*";inherits:false;}
+      @property --un-ring-offset-color{syntax:"*";inherits:false;}
+      @property --un-ring-offset-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}
+      @property --un-ring-offset-width{syntax:"<length>";inherits:false;initial-value:0px;}
+      @property --un-ring-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}
+      @property --un-shadow{syntax:"*";inherits:false;initial-value:0 0 #0000;}
+      @property --un-shadow-alpha{syntax:"<percent>";inherits:false;initial-value:100%;}
+      @property --un-shadow-color{syntax:"*";inherits:false;}
+      @property --un-shadow-opacity{syntax:"<percentage>";inherits:false;initial-value:100%;}
+      /* layer: default */
+      .shadow,
+      .shadow-sm{--un-shadow:0 1px 3px 0 var(--un-shadow-color, rgb(0 0 0 / 0.1)),0 1px 2px -1px var(--un-shadow-color, rgb(0 0 0 / 0.1));box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}
+      .shadow-red-300\\/30{--un-shadow-color:color-mix(in srgb, var(--colors-red-300) 30%, transparent);}
+      .shadow-sm\\/50,
+      .shadow\\/50{--un-shadow-alpha:50%;--un-shadow:0 1px 3px 0 var(--un-shadow-color, rgb(0 0 0 / 0.1)),0 1px 2px -1px var(--un-shadow-color, rgb(0 0 0 / 0.1));box-shadow:var(--un-inset-shadow), var(--un-inset-ring-shadow), var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);}
+      @supports (color: color-mix(in lab, red, red)){
+      .shadow-red-300\\/30{--un-shadow-color:color-mix(in oklab, var(--colors-red-300) 30%, transparent);}
+      }"
+    `)
   })
 })
