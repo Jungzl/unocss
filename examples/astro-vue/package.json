@@ -1,5 +1,5 @@
 {
-  "name": "unocss-astro",
+  "name": "unocss-astro-vue",
   "private": true,
   "scripts": {
     "dev": "astro dev",
@@ -9,13 +9,13 @@
     "astro": "astro"
   },
   "dependencies": {
-    "vue": "^3.5.13"
+    "vue": "^3.5.26"
   },
   "devDependencies": {
-    "@astrojs/vue": "^4.5.3",
-    "@iconify-json/logos": "^1.2.4",
-    "@unocss/reset": "link:../../packages-presets/reset",
-    "astro": "^4.16.18",
+    "@astrojs/vue": "^5.1.4",
+    "@iconify-json/logos": "^1.2.10",
+    "@unocss/astro": "link:../../packages-integrations/astro",
+    "astro": "^5.16.7",
     "unocss": "link:../../packages-presets/unocss"
   },
   "stackblitz": {

@@ -4,6 +4,7 @@ import type { AstroIntegration } from 'astro'
 import type { Plugin } from 'vite'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import presetWind3 from '@unocss/preset-wind3'
 import VitePlugin from '@unocss/vite'
 import { normalizePath } from 'vite'
 
@@ -89,6 +90,11 @@ export default function UnoCSSAstroIntegration<Theme extends object>(
         options.content ||= {}
         options.content.filesystem ||= []
         options.content.filesystem.push(source)
+
+        // Apply default preset if no presets are specified
+        if (!options.presets || options.presets.length === 0) {
+          options.presets = [presetWind3()]
+        }
 
         const injects: string[] = []
         if (injectReset) {

@@ -22,7 +22,6 @@ export default defineConfig([
     entry: [
       'src/index.ts',
       'src/vite.ts',
-      'src/astro.ts',
       'src/preset-uno.ts',
       'src/preset-icons.ts',
       'src/preset-attributify.ts',
@@ -38,9 +37,7 @@ export default defineConfig([
     dts: true,
     external: [
       'vite',
-      'astro',
       '@unocss/vite',
-      '@unocss/astro',
     ],
     attw: {
       profile: 'esm-only',

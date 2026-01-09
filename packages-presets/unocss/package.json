@@ -76,10 +76,6 @@
       "types": "./dist/vite.d.mts",
       "default": "./dist/vite.mjs"
     },
-    "./astro": {
-      "types": "./dist/astro.d.mts",
-      "default": "./dist/astro.mjs"
-    },
     "./webpack": {
       "import": {
         "types": "./dist/webpack.d.mts",
@@ -135,7 +131,6 @@
     }
   },
   "dependencies": {
-    "@unocss/astro": "workspace:*",
     "@unocss/cli": "workspace:*",
     "@unocss/core": "workspace:*",
     "@unocss/postcss": "workspace:*",

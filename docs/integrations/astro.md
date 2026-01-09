@@ -12,26 +12,26 @@ The UnoCSS integration for [Astro](https://astro.build/): `@unocss/astro`. Check
 ::: code-group
 
 ```bash [pnpm]
-pnpm add -D unocss
+pnpm add -D @unocss/astro
 ```
 
 ```bash [yarn]
-yarn add -D unocss
+yarn add -D @unocss/astro
 ```
 
 ```bash [npm]
-npm install -D unocss
+npm install -D @unocss/astro
 ```
 
 ```bash [bun]
-bun add -D unocss
+bun add -D @unocss/astro
 ```
 
 :::
 
 ```ts [astro.config.ts]
+import UnoCSS from '@unocss/astro'
 import { defineConfig } from 'astro/config'
-import UnoCSS from 'unocss/astro'
 
 export default defineConfig({
   integrations: [
@@ -77,8 +77,8 @@ bun add -D @unocss/reset
 And update your `astro.config.ts`:
 
 ```ts [astro.config.ts]
+import UnoCSS from '@unocss/astro'
 import { defineConfig } from 'astro/config'
-import UnoCSS from 'unocss/astro'
 
 export default defineConfig({
   integrations: [
@@ -89,45 +89,23 @@ export default defineConfig({
 })
 ```
 
-### Usage without presets
+## Presets
 
-This plugin does not come with any default presets.
+By default, `@unocss/astro` comes with the `@unocss/preset-wind3` preset.
 
-::: code-group
+You can customize the presets in your `uno.config.ts` file:
 
-```bash [pnpm]
-pnpm add -D @unocss/astro
-```
+```ts [uno.config.ts]
+import { defineConfig, presetWind4 } from 'unocss'
 
-```bash [yarn]
-yarn add -D @unocss/astro
-```
-
-```bash [npm]
-npm install -D @unocss/astro
-```
-
-```bash [bun]
-bun add -D @unocss/astro
-```
-
-:::
-
-```ts [astro.config.mjs]
-import UnoCSS from '@unocss/astro'
-
-export default {
-  integrations: [
-    UnoCSS(),
+export default defineConfig({
+  presets: [
+    presetWind4(), // or any other presets
   ],
-}
+})
 ```
 
 For more details, please refer to the [Vite plugin](/integrations/vite).
-
-::: info
-If you are building a meta framework on top of UnoCSS, see [this file](https://github.com/unocss/unocss/blob/main/packages-presets/unocss/src/astro.ts) for an example on how to bind the default presets.
-:::
 
 ## Notes
 

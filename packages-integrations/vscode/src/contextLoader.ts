@@ -154,7 +154,7 @@ export class ContextLoader {
             files: [
               'astro.config',
             ],
-            targetModule: 'unocss/astro',
+            targetModule: '@unocss/astro',
           }),
           sourceObjectFields({
             files: 'nuxt.config',
