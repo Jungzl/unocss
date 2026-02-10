@@ -1,0 +1,19 @@
+[package]
+name = "unocss"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+description = "UnoCSS extension for Zed editor. Automatically installs the latest @unocss/language-server from npm."
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+zed_extension_api = "0.7.0"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
