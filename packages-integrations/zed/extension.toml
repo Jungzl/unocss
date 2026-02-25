@@ -1,0 +1,23 @@
+id = "unocss"
+name = "UnoCSS"
+version = "0.0.1"
+schema_version = 1
+authors = ["Anthony Fu <anthonyfu117@hotmail.com>"]
+description = "Instant on-demand Atomic CSS engine - IntelliSense, autocomplete, and diagnostics"
+repository = "https://github.com/unocss/unocss"
+homepage = "https://unocss.dev"
+
+[language_servers.unocss]
+name = "UnoCSS Language Server"
+languages = ["JavaScript", "TypeScript", "TSX", "Vue.js", "Svelte", "Astro", "HTML", "CSS", "Markdown"]
+
+[language_servers.unocss.language_ids]
+JavaScript = "javascript"
+TypeScript = "typescript"
+TSX = "typescriptreact"
+"Vue.js" = "vue"
+Svelte = "svelte"
+Astro = "astro"
+HTML = "html"
+CSS = "css"
+Markdown = "markdown"
