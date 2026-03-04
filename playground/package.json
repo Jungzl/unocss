@@ -9,6 +9,9 @@
     "update-post": "vite build",
     "serve": "vite preview"
   },
+  "dependencies": {
+    "@unocss/reset": "workspace:*"
+  },
   "devDependencies": {
     "simple-git": "catalog:utils"
   }

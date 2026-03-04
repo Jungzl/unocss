@@ -27,4 +27,5 @@ export default defineConfig({
     enabled: 'ci-only',
     ignoreRules: ['cjs-resolves-to-esm'],
   },
+  external: ['@iconify/types'],
 })

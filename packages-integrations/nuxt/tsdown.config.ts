@@ -14,4 +14,14 @@ export default defineConfig({
   failOnWarn: true,
   publint: 'ci-only',
   attw: 'ci-only',
+  inlineOnly: false,
+  external: [
+    '@nuxt/schema',
+    '@nuxt/kit',
+    '@unocss/vite',
+    '@unocss/webpack',
+    'nuxt',
+    'vite',
+    'webpack',
+  ],
 })

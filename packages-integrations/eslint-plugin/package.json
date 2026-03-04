@@ -51,6 +51,7 @@
     "lint": "nr build && cd ./fixtures && eslint ./src"
   },
   "dependencies": {
+    "@typescript-eslint/types": "catalog:typescript",
     "@typescript-eslint/utils": "catalog:typescript",
     "@unocss/config": "workspace:*",
     "@unocss/core": "workspace:*",

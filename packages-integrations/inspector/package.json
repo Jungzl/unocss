@@ -36,14 +36,23 @@
     "update-post": "vite build"
   },
   "dependencies": {
+    "@codemirror/lang-css": "catalog:codemirror",
+    "@codemirror/lang-html": "catalog:codemirror",
+    "@codemirror/lang-javascript": "catalog:codemirror",
+    "@codemirror/lang-xml": "catalog:codemirror",
+    "@lezer/highlight": "catalog:codemirror",
     "@unocss/core": "workspace:*",
+    "@unocss/preset-attributify": "workspace:*",
+    "@unocss/reset": "workspace:*",
     "@unocss/rule-utils": "workspace:*",
+    "codemirror": "catalog:codemirror",
     "colorette": "catalog:utils",
     "gzip-size": "catalog:build",
     "sirv": "catalog:utils"
   },
   "devDependencies": {
     "@vitejs/devtools-kit": "catalog:types",
+    "vite": "catalog:vite",
     "vue-flow-layout": "catalog:vue"
   }
 }

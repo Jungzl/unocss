@@ -24,6 +24,7 @@ export default defineConfig([
     copy: [
       babelSource,
     ],
+    inlineOnly: false,
   },
   {
     entry: ['src/index.ts'],
@@ -33,5 +34,6 @@ export default defineConfig([
     exports: true,
     failOnWarn: true,
     publint: 'ci-only',
+    inlineOnly: false,
   },
 ])
