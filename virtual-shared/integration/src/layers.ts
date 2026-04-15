@@ -1,10 +1,13 @@
 import type { UnocssPluginContext } from '@unocss/core'
+import type { VirtualModuleRegexes } from './context'
 import { resolve } from 'pathe'
 import { LAYER_MARK_ALL, VIRTUAL_ENTRY_ALIAS } from './constants'
 
 export async function resolveId(ctx: UnocssPluginContext, id: string, importer?: string) {
-  const { RESOLVED_ID_WITH_QUERY_RE, prefix } = await ctx.getVMPRegexes()
+  return resolveIdByRegexes(await ctx.getVMPRegexes(), id, importer)
+}
 
+export function resolveIdByRegexes({ RESOLVED_ID_WITH_QUERY_RE, prefix }: VirtualModuleRegexes, id: string, importer?: string) {
   if (id.match(RESOLVED_ID_WITH_QUERY_RE)) {
     return id
   }
@@ -26,7 +29,10 @@ export async function resolveId(ctx: UnocssPluginContext, id: string, importer?:
 }
 
 export async function resolveLayer(ctx: UnocssPluginContext, id: string) {
-  const { RESOLVED_ID_RE } = await ctx.getVMPRegexes()
+  return resolveLayerByRegexes(await ctx.getVMPRegexes(), id)
+}
+
+export function resolveLayerByRegexes({ RESOLVED_ID_RE }: Pick<VirtualModuleRegexes, 'RESOLVED_ID_RE'>, id: string) {
   const match = id.match(RESOLVED_ID_RE)
   if (match) {
     return match[1] || LAYER_MARK_ALL

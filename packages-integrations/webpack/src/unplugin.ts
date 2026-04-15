@@ -1,12 +1,13 @@
-import type { UserConfigDefaults } from '@unocss/core'
+import type { FilterPattern, UserConfigDefaults } from '@unocss/core'
 import type { Buffer } from 'node:buffer'
-import type { ResolvedUnpluginOptions, UnpluginOptions } from 'unplugin'
+import type { ResolvedUnpluginOptions, StringOrRegExp, UnpluginOptions } from 'unplugin'
 import type { WebpackPluginOptions } from '.'
 import { isAbsolute, normalize } from 'node:path'
 import process from 'node:process'
 import { LAYER_MARK_ALL } from '#integration/constants'
 import { setupContentExtractor } from '#integration/content'
-import { createContext } from '#integration/context'
+import { createContext, getVirtualModuleRegexes } from '#integration/context'
+import { defaultPipelineExclude, defaultPipelineInclude } from '#integration/defaults'
 import { getHash } from '#integration/hash'
 import {
   getCssEscaperForJsContent,
@@ -15,6 +16,7 @@ import {
   HASH_PLACEHOLDER_RE,
   LAYER_PLACEHOLDER_RE,
   resolveId,
+  resolveIdByRegexes,
   resolveLayer,
 } from '#integration/layers'
 import { applyTransformers } from '#integration/transformers'
@@ -44,26 +46,65 @@ export function unplugin<Theme extends object>(configOrPath?: WebpackPluginOptio
 
     const entries = new Set<string>()
     const hashes = new Map<string, string>()
+    let vmpRegexes = getVirtualModuleRegexes()
+    let pipelineInclude: StringOrRegExp[] = [...defaultPipelineInclude]
+    let pipelineExclude: StringOrRegExp[] = [...defaultPipelineExclude]
+
+    async function syncVMPRegexes() {
+      vmpRegexes = await ctx.getVMPRegexes()
+      return vmpRegexes
+    }
+
+    async function syncPipelineFilterPatterns() {
+      const config = await ctx.getConfig()
+      if (config.content?.pipeline === false) {
+        pipelineInclude = [/\b\B/]
+        pipelineExclude = []
+        return
+      }
+
+      pipelineInclude = normalizePatterns(config.content?.pipeline?.include) || [...defaultPipelineInclude]
+      pipelineExclude = normalizePatterns(config.content?.pipeline?.exclude) || [...defaultPipelineExclude]
+    }
+
+    void syncVMPRegexes()
+    void syncPipelineFilterPatterns()
+    ctx.onReload(() => {
+      void syncVMPRegexes()
+      void syncPipelineFilterPatterns()
+    })
 
     const plugin = {
       name: 'unocss:webpack',
       enforce: 'pre',
-      async transform(code, id) {
-        const { RESOLVED_ID_RE } = await ctx.getVMPRegexes()
-        if (RESOLVED_ID_RE.test(id) || !filter('', id) || id.endsWith('.html'))
-          return
+      transform: {
+        get filter() {
+          return {
+            id: {
+              include: pipelineInclude,
+              exclude: [...pipelineExclude, /\.html($|\?)/, vmpRegexes.RESOLVED_ID_WITH_QUERY_RE],
+            },
+          }
+        },
+        async handler(code, id) {
+          await syncVMPRegexes()
+          await syncPipelineFilterPatterns()
 
-        const result = await applyTransformers(ctx, code, id, 'pre')
-        if (isCssId(id))
+          if (!filter('', id) || id.endsWith('.html') || vmpRegexes.RESOLVED_ID_RE.test(id))
+            return
+
+          const result = await applyTransformers(ctx, code, id, 'pre')
+          if (isCssId(id))
+            return result
+          if (result == null)
+            tasks.push(extract(code, id))
+          else
+            tasks.push(extract(result.code, id))
           return result
-        if (result == null)
-          tasks.push(extract(code, id))
-        else
-          tasks.push(extract(result.code, id))
-        return result
+        },
       },
       async resolveId(id) {
-        const entry = await resolveId(ctx, id)
+        const entry = resolveIdByRegexes(await syncVMPRegexes(), id)
         if (entry === id)
           return
         if (entry) {
@@ -77,17 +118,26 @@ export function unplugin<Theme extends object>(configOrPath?: WebpackPluginOptio
         }
       },
       // serve the placeholders in virtual module
-      async load(id) {
-        const layer = await getLayer(ctx, id)
-        if (!layer)
-          return
+      load: {
+        get filter() {
+          return {
+            id: vmpRegexes.RESOLVED_ID_WITH_QUERY_RE,
+          }
+        },
+        async handler(id) {
+          const layer = await getLayer(ctx, id)
+          if (!layer)
+            return
 
-        const hash = hashes.get(id)
-        return (hash ? getHashPlaceholder(hash) : '') + getLayerPlaceholder(layer)
+          const hash = hashes.get(id)
+          return (hash ? getHashPlaceholder(hash) : '') + getLayerPlaceholder(layer)
+        },
       },
       webpack(compiler) {
         compiler.hooks.beforeCompile.tapPromise(PLUGIN_NAME, async () => {
           await ctx.ready
+          await syncVMPRegexes()
+          await syncPipelineFilterPatterns()
 
           const nonPreTransformers = ctx.uno.config.transformers?.filter(i => i.enforce !== 'pre')
           if (nonPreTransformers?.length) {
@@ -243,4 +293,10 @@ function normalizeAbsolutePath(path: string) {
     return normalize(path)
   else
     return path
+}
+
+function normalizePatterns(patterns: FilterPattern | undefined) {
+  if (!patterns)
+    return
+  return Array.isArray(patterns) ? patterns : [patterns]
 }

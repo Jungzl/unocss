@@ -8,6 +8,21 @@ import { CSS_PLACEHOLDER, IGNORE_COMMENT, INCLUDE_COMMENT, SKIP_COMMENT_RE } fro
 import { defaultPipelineExclude, defaultPipelineInclude } from './defaults'
 import { deprecationCheck } from './deprecation'
 
+export interface VirtualModuleRegexes {
+  prefix: string
+  RESOLVED_ID_WITH_QUERY_RE: RegExp
+  RESOLVED_ID_RE: RegExp
+}
+
+export function getVirtualModuleRegexes(prefix = '__uno'): VirtualModuleRegexes {
+  const escapedPrefix = prefix.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
+  return {
+    prefix,
+    RESOLVED_ID_WITH_QUERY_RE: new RegExp(`[/\\\\]${escapedPrefix}(_.*?)?\\.css(\\?.*)?$`),
+    RESOLVED_ID_RE: new RegExp(`[/\\\\]${escapedPrefix}(?:_(.*?))?\\.css$`),
+  }
+}
+
 export function createContext<Config extends UserConfig<any> = UserConfig<any>>(
   configOrPath?: Config | string,
   defaults: UserConfigDefaults = {},
@@ -113,21 +128,15 @@ export function createContext<Config extends UserConfig<any> = UserConfig<any>>(
   /**
    * Get regexes to match virtual module ids
    */
-  const vmpCache = new Map<string, { prefix: string, RESOLVED_ID_WITH_QUERY_RE: RegExp, RESOLVED_ID_RE: RegExp }>()
-  async function getVMPRegexes(): Promise<{ prefix: string, RESOLVED_ID_WITH_QUERY_RE: RegExp, RESOLVED_ID_RE: RegExp }> {
+  const vmpCache = new Map<string, VirtualModuleRegexes>()
+  async function getVMPRegexes(): Promise<VirtualModuleRegexes> {
     const config = await getConfig()
     const prefix = config.virtualModulePrefix || '__uno'
 
     if (vmpCache.has(prefix))
       return vmpCache.get(prefix)!
 
-    const RESOLVED_ID_WITH_QUERY_RE = new RegExp(`[/\\\\]${prefix}(_.*?)?\\.css(\\?.*)?$`)
-    const RESOLVED_ID_RE = new RegExp(`[/\\\\]${prefix}(?:_(.*?))?\.css$`)
-    const regexes = {
-      prefix,
-      RESOLVED_ID_WITH_QUERY_RE,
-      RESOLVED_ID_RE,
-    }
+    const regexes = getVirtualModuleRegexes(prefix)
     vmpCache.set(prefix, regexes)
     return regexes
   }
