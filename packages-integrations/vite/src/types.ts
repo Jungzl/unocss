@@ -2,9 +2,11 @@ import type { UserConfig } from '@unocss/core'
 
 export interface VitePluginConfig<Theme extends object = object> extends UserConfig<Theme> {
   /**
-   * Enable UnoCSS inspector
+   * Enable UnoCSS inspector.
    *
-   * @default true
+   * Requires `@unocss/inspector` to be installed.
+   *
+   * @default false
    */
   inspector?: boolean
 

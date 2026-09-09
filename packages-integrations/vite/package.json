@@ -44,14 +44,20 @@
     "dev": "tsdown --config-loader unrun --watch"
   },
   "peerDependencies": {
+    "@unocss/inspector": "workspace:*",
     "vite": "^5.0.0-0 || ^6.0.0-0 || ^7.0.0-0 || ^8.0.0-0"
+  },
+  "peerDependenciesMeta": {
+    "@unocss/inspector": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@jridgewell/remapping": "catalog:build",
     "@unocss/config": "workspace:*",
     "@unocss/core": "workspace:*",
-    "@unocss/inspector": "workspace:*",
     "chokidar": "catalog:utils",
+    "local-pkg": "catalog:utils",
     "magic-string": "catalog:utils",
     "pathe": "catalog:utils",
     "tinyglobby": "catalog:utils",

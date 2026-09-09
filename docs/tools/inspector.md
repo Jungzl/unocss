@@ -6,7 +6,19 @@ description: The inspector UI for UnoCSS (@unocss/inspector).
 # Inspector
 
 The inspector UI for UnoCSS: `@unocss/inspector`.
-Ships with `unocss` and `@unocss/vite`.
+
+It is an optional peer dependency of `@unocss/vite`. Install it and enable it in the Vite plugin:
+
+```ts [vite.config.ts]
+import UnoCSS from 'unocss/vite'
+import { defineConfig } from 'vite'
+
+export default defineConfig({
+  plugins: [
+    UnoCSS({ inspector: true }),
+  ],
+})
+```
 
 The inspector allows you to inspect the generated CSS rules and the applied classes for each file. It also provides a REPL to test your utilities based on your current configuration.
 
@@ -14,7 +26,7 @@ Built on top of [devframe](https://devfra.me/), the inspector can be hosted in s
 
 ## Vite DevTools (recommended)
 
-When [Vite DevTools](https://devtools.vite.dev/) (`@vitejs/devtools`) is installed, the inspector is mounted automatically as a **UnoCSS dock** inside it — no auth prompt, live updates included.
+When the inspector is enabled and [Vite DevTools](https://devtools.vite.dev/) (`@vitejs/devtools`) is installed, it is mounted automatically as a **UnoCSS dock** inside it — no auth prompt, live updates included.
 
 `vite build` with DevTools' static build also bakes a pre-computed snapshot of the inspector data into the export, so the analysis is viewable without a dev server.
 

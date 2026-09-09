@@ -2,7 +2,8 @@ import type { UnocssPluginContext, UserConfigDefaults } from '@unocss/core'
 import type { Plugin } from 'vite'
 import type { VitePluginConfig } from './types'
 import process from 'node:process'
-import UnocssInspector from '@unocss/inspector'
+import { warnOnce } from '@unocss/core'
+import { isPackageExists } from 'local-pkg'
 import { createContext } from '#integration/context'
 import { ConfigHMRPlugin } from './config-hmr'
 import { createDevtoolsPlugin } from './devtool'
@@ -18,6 +19,12 @@ export * from './modes/global'
 export * from './modes/per-module'
 export * from './modes/vue-scoped'
 export * from './types'
+
+const hasInspector = isPackageExists('@unocss/inspector')
+const UnocssInspector = hasInspector
+  // eslint-disable-next-line antfu/no-top-level-await
+  ? (await import('@unocss/inspector')).default
+  : undefined
 
 export function defineConfig<Theme extends object>(config: VitePluginConfig<Theme>) {
   return config
@@ -58,8 +65,14 @@ export default function UnocssPlugin<Theme extends object>(
     },
   ]
 
-  if (inlineConfig.inspector !== false)
-    plugins.push(...UnocssInspector(ctx) as any[])
+  if (inlineConfig.inspector) {
+    if (UnocssInspector) {
+      plugins.push(...UnocssInspector(ctx) as any[])
+    }
+    else {
+      warnOnce('`inspector: true` requires `@unocss/inspector` to be installed.')
+    }
+  }
 
   if (mode === 'per-module') {
     plugins.push(...PerModuleModePlugin(ctx))
