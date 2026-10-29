@@ -58,6 +58,16 @@ UnoCSS also have a package for the interactive documentation, can be found in th
 
 Finally, commit your changes and create a pull request to the `main` branch of the UnoCSS repository (check the previous step 8).
 
+## Generated files
+
+Some tracked files are generated and should not be edited manually or included in pull requests. For example, `packages-presets/preset-icons/src/collections.ts` is refreshed from the Iconify API by the ["Update Iconify Collections"](https://github.com/unocss/unocss/blob/main/.github/workflows/update-iconify-collections.yml) workflow. If it shows up as changed in your PR, revert it with:
+
+```shell
+git checkout HEAD -- packages-presets/preset-icons/src/collections.ts
+```
+
+The scheduled workflow opens or updates a dedicated pull request for the list, so regular PRs don't need to include it. Since that PR is created with `GITHUB_TOKEN`, close and reopen it to trigger CI before merging.
+
 ## CI errors
 
 Sometimes when you push your changes to create a new pull request (PR), the CI can fail, but we cannot check the logs to see what went wrong.

@@ -141,8 +141,12 @@ async function updateTsconfig() {
 }
 
 async function prepare() {
+  // This script runs on every `pnpm install` (including CI and the autofix
+  // workflow) and on pre-commit. Keep it hermetic: do not add network-backed
+  // generators here, otherwise they leak unrelated changes into pull requests.
+  // The iconify collection list is refreshed by
+  // `.github/workflows/update-iconify-collections.yml` instead.
   await Promise.all([
-    x('pnpm', ['run', 'update:iconify-collections'], { throwOnError: true }),
     fixVSCodePackage(),
     preparePackagesBundle(),
     updateTsconfig(),

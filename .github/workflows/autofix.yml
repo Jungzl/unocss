@@ -33,4 +33,11 @@ jobs:
 
       - run: pnpm lint --fix
 
+      # `prepare` runs during install and used to refresh the generated iconify
+      # collection list. Never include that unrelated change in an autofix
+      # commit; it is refreshed by the dedicated scheduled workflow at
+      # `.github/workflows/update-iconify-collections.yml`.
+      - name: Discard generated iconify collection changes
+        run: git checkout HEAD -- packages-presets/preset-icons/src/collections.ts
+
       - uses: autofix-ci/action@v1

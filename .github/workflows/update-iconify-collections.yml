@@ -1,0 +1,75 @@
+name: Update Iconify Collections
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Iconify adds new collections in irregular batches: roughly 1-2 events per
+    # month over the last year, but sometimes several within a week. Running
+    # every 3 days keeps the list fresh; the PR branch is only updated when the
+    # API list actually changes.
+    - cron: '0 0 */3 * *'
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: update-iconify-collections
+  cancel-in-progress: true
+
+jobs:
+  update:
+    if: github.repository == 'unocss/unocss'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Use Node.js lts/*
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Update iconify collections
+        run: pnpm run update:iconify-collections
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # `main` is protected by required status checks, so the bot cannot push
+      # directly. Create/update a dedicated PR instead; it is refreshed in place
+      # on every run until it is merged or closed.
+      - name: Create or update pull request
+        id: pr
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: chore/update-iconify-collections
+          base: main
+          delete-branch: true
+          add-paths: packages-presets/preset-icons/src/collections.ts
+          labels: no stale
+          commit-message: 'chore(preset-icons): update iconify collections'
+          title: 'chore(preset-icons): update iconify collections'
+          author: 'github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>'
+          body: |
+            This PR refreshes the generated iconify collection list from the
+            [Iconify API](https://api.github.com/repos/iconify/icon-sets/contents/json).
+
+            It is opened and updated in place by the "Update Iconify Collections"
+            workflow until it is merged or closed.
+
+            > [!NOTE]
+            > GitHub does not trigger `pull_request` workflows for PRs created
+            > with `GITHUB_TOKEN`. To run CI, close and reopen this PR (or push
+            > an empty commit), then merge once the required checks pass.
+          signoff: true
