@@ -73,7 +73,8 @@ export function unplugin<Theme extends object>(configOrPath?: WebpackPluginOptio
           },
         },
         async handler(code, id) {
-          if (!filter('', id))
+          // Pass the code so `@unocss-include` / `@unocss-ignore` keep working.
+          if (!filter(code, id))
             return
 
           const result = await applyTransformers(ctx, code, id, 'pre')

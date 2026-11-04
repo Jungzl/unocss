@@ -38,6 +38,9 @@ async function runWebpackConfig(config: webpack.Configuration) {
   expect(out[0]).toBe(0x89)
   expect(out[1]).toBe(0x50)
   expect(bundle).toContain('.text-red')
+  // `src/dynamic.js` is excluded by the default pipeline include; only its
+  // `@unocss-include` comment can pull it in.
+  expect(bundle).toContain('.text-green')
 }
 
 describe('webpack png', () => {
