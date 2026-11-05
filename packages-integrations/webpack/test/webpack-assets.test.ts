@@ -11,25 +11,11 @@ async function runWebpack(options?: Parameters<typeof createWebpackConfig>[0]) {
   process.chdir(root)
 
   try {
-    await runWebpackConfig(createWebpackConfig(options))
+    await buildWebpack(createWebpackConfig(options))
   }
   finally {
     process.chdir(cwd)
   }
-}
-
-async function runWebpackConfig(config: webpack.Configuration) {
-  await rm(join(root, 'dist'), { recursive: true, force: true })
-
-  await new Promise<void>((resolvePromise, reject) => {
-    webpack(config, (err, stats) => {
-      if (err)
-        return reject(err)
-      if (stats?.hasErrors())
-        return reject(stats.toJson()?.errors)
-      resolvePromise()
-    })
-  })
 
   const src = await readFile(join(root, 'src/logo.png'))
   const out = await readFile(join(root, 'dist/assets/logo.png'))
@@ -43,6 +29,20 @@ async function runWebpackConfig(config: webpack.Configuration) {
   expect(bundle).toContain('.text-green')
 }
 
+async function buildWebpack(config: webpack.Configuration) {
+  await rm(join(root, 'dist'), { recursive: true, force: true })
+
+  await new Promise<void>((resolvePromise, reject) => {
+    webpack(config, (err, stats) => {
+      if (err)
+        return reject(err)
+      if (stats?.hasErrors())
+        return reject(stats.toJson()?.errors)
+      resolvePromise()
+    })
+  })
+}
+
 describe('webpack png', () => {
   it('preserves imported png bytes with @unocss/webpack enabled', async () => {
     await runWebpack()
@@ -50,5 +50,23 @@ describe('webpack png', () => {
 
   it('preserves imported png bytes with custom virtualModulePrefix', async () => {
     await runWebpack({ virtualModulePrefix: 'custom_uno' })
+  })
+})
+
+describe('webpack native css', () => {
+  it('emits the virtual css module as a stylesheet', async () => {
+    const cwd = process.cwd()
+    process.chdir(root)
+
+    try {
+      await buildWebpack(createWebpackConfig(undefined, { nativeCss: true }))
+    }
+    finally {
+      process.chdir(cwd)
+    }
+
+    const css = await readFile(join(root, 'dist/main.css'), 'utf8')
+    expect(css).toContain('.text-red')
+    expect(css).toContain('.text-green')
   })
 })

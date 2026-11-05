@@ -107,6 +107,23 @@ export function unplugin<Theme extends object>(configOrPath?: WebpackPluginOptio
       // (`virtualModulePrefix`, default `__uno`).
       load: virtualCssLoad,
       webpack(compiler) {
+        // unplugin's `load` rule types every virtual module as `javascript/auto`.
+        // UnoCSS only uses `load` for virtual CSS, so restore the CSS module type
+        // when webpack's native CSS support is explicitly enabled; otherwise the
+        // placeholder would be parsed as JavaScript.
+        if (compiler.options.experiments?.css === true) {
+          for (const rule of compiler.options.module.rules) {
+            if (!rule || typeof rule !== 'object' || !Array.isArray(rule.use))
+              continue
+            if (
+              rule.type === 'javascript/auto'
+              && rule.use.some(use => typeof use === 'object' && use !== null && (use as any).options?.plugin === plugin)
+            ) {
+              rule.type = 'css/auto'
+              break
+            }
+          }
+        }
         compiler.hooks.beforeCompile.tapPromise(PLUGIN_NAME, async () => {
           await ctx.ready
           await applyVirtualCssFilter()
