@@ -398,6 +398,14 @@ export const presetWind4Targets: string[] = [
   // position
   'top-1/2',
 
+  // transform
+  'skew-x-12',
+  '-skew-x-12',
+  '-skew-y-6',
+  '-rotate-x-45',
+  '-rotate-y-180',
+  '-rotate-z-90',
+
   // translate
   'translate-y-1/2',
 

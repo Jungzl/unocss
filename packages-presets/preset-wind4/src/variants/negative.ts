@@ -32,18 +32,47 @@ function negateMathFunction(value: string) {
   }
 }
 
-const negateFunctionBodyRE = /\b(hue-rotate)\s*(\(.*)/
-function negateFunctionBody(value: string) {
-  const match = value.match(negateFunctionBodyRE)
-  if (match) {
-    const [fnBody, rest] = getStringComponent(match[2], '(', ')', ' ') ?? []
-    if (fnBody) {
-      const body = anchoredNumberRE.test(fnBody.slice(1, -1))
-        ? fnBody.replace(numberRE, i => i.startsWith('-') ? i.slice(1) : `-${i}`)
-        : `(calc(${fnBody} * -1))`
-      return `${match[1]}${body}${rest ? ` ${rest}` : ''}`
-    }
-  }
+// CSS functions whose first argument is an angle we can negate by flipping its sign.
+// `rotate` accepts `X`/`Y`/`Z` axes, while `skew` only accepts `X`/`Y`.
+const negatableFunctions = new Set([
+  'hue-rotate',
+  'rotateX',
+  'rotateY',
+  'rotateZ',
+  'skewX',
+  'skewY',
+])
+
+const functionCallRE = /^([\w-]+)\s*(\(.*)$/
+
+function flipNumberSign(value: string) {
+  return value.replace(numberRE, i => i.startsWith('-') ? i.slice(1) : `-${i}`)
+}
+
+function negateFunctionCall(value: string) {
+  const [, fnName, args] = value.match(functionCallRE) ?? []
+  if (!fnName || !args || !negatableFunctions.has(fnName))
+    return
+
+  const [fnBody, rest] = getStringComponent(args, '(', ')', ' ') ?? []
+  if (!fnBody)
+    return
+
+  const body = anchoredNumberRE.test(fnBody.slice(1, -1))
+    ? fnBody.replace(numberRE, flipNumberSign)
+    : `(calc(${fnBody} * -1))`
+
+  return `${fnName}${body}${rest ? ` ${rest}` : ''}`
+}
+
+function negateValue(value: string) {
+  const normalized = value.trimStart()
+  if (normalized === '0')
+    return
+
+  return negateMathFunction(normalized)
+    ?? negateFunctionCall(normalized)
+    ?? (anchoredNumberRE.test(normalized) ? flipNumberSign(normalized) : undefined)
 }
 
 export const variantNegative: Variant<Theme> = {
@@ -73,11 +102,7 @@ export const variantNegative: Variant<Theme> = {
           if (!value || value === '0' || ignoreProps.some(i => i.test(prop)))
             continue
 
-          const nextValue = negateMathFunction(value)
-            ?? negateFunctionBody(value)
-            ?? (anchoredNumberRE.test(value)
-              ? value.replace(numberRE, i => i.startsWith('-') ? i.slice(1) : `-${i}`)
-              : undefined)
+          const nextValue = negateValue(value)
 
           if (!nextValue || nextValue === value)
             continue
