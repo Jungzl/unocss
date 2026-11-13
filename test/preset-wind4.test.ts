@@ -3,7 +3,7 @@ import presetWind4 from '@unocss/preset-wind4'
 import { createRemToPxProcessor } from '@unocss/preset-wind4/utils'
 import parserCSS from 'prettier/parser-postcss'
 import prettier from 'prettier/standalone'
-import { describe, expect, it } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { presetWind4Targets } from './assets/preset-wind4-targets'
 
 describe('preset-wind4', () => {
@@ -1216,70 +1216,104 @@ describe('theme preflight determinism', () => {
     expect(reversed).toBe(forward)
     expect(rotated).toBe(forward)
   })
+})
 
-  describe('negative variant', async () => {
-    const uno = await createGenerator({ presets: [presetWind4()] })
-    const generate = async (utility: string) =>
-      (await uno.generate(utility, { preflights: false })).css
+const createUno = () => createGenerator({ presets: [presetWind4()] })
 
-    it.each([
-      // axis rotations
-      ['-rotate-x-45', '--un-rotate-x:rotateX(-45deg)'],
-      ['-rotate-y-180', '--un-rotate-y:rotateY(-180deg)'],
-      ['-rotate-z-90', '--un-rotate-z:rotateZ(-90deg)'],
-      ['-transform-rotate-y-45', '--un-rotate-y:rotateY(-45deg)'],
-      // skew
-      ['-skew-x-12', '--un-skew-x:skewX(-12deg)'],
-      ['-skew-y-6', '--un-skew-y:skewY(-6deg)'],
-      ['-skew-6', '--un-skew-y:skewY(-6deg)'],
-      ['-transform-skew-x-6', '--un-skew-x:skewX(-6deg)'],
-      // arbitrary values, fractions and explicit units
-      ['-rotate-x-[30deg]', '--un-rotate-x:rotateX(-30deg)'],
-      ['-skew-y-[10deg]', '--un-skew-y:skewY(-10deg)'],
-      ['-rotate-z-1.5deg', '--un-rotate-z:rotateZ(-1.5deg)'],
-      ['-skew-y-0.5', '--un-skew-y:skewY(-0.5deg)'],
-      // an already negative angle flips back
-      ['-rotate-x-[-45deg]', '--un-rotate-x:rotateX(45deg)'],
-      ['-skew-x-[-6deg]', '--un-skew-x:skewX(6deg)'],
-    ])('negates %s', async (utility, declaration) => {
-      expect(await generate(utility)).toContain(declaration)
+describe('preset-wind4 negative variant', () => {
+  let uno: Awaited<ReturnType<typeof createUno>>
+
+  beforeAll(async () => {
+    uno = await createUno()
+  })
+
+  const generate = async (utility: string | string[]) =>
+    (await uno.generate(utility, { preflights: false })).css
+
+  // every `transform` family rule also re-declares the full chain
+  const transformChain = 'transform:var(--un-rotate-x) var(--un-rotate-y) var(--un-rotate-z) var(--un-skew-x) var(--un-skew-y);'
+  const rule = (selector: string, declarations: string) => `${selector}{${declarations}${transformChain}}`
+
+  it.each([
+    // axis rotations
+    ['-rotate-x-45', '--un-rotate-x:rotateX(-45deg);'],
+    ['-rotate-y-180', '--un-rotate-y:rotateY(-180deg);'],
+    ['-rotate-z-90', '--un-rotate-z:rotateZ(-90deg);'],
+    ['-transform-rotate-y-45', '--un-rotate-y:rotateY(-45deg);'],
+    // skew, including the both-axis shorthand
+    ['-skew-x-12', '--un-skew-x:skewX(-12deg);'],
+    ['-skew-y-6', '--un-skew-y:skewY(-6deg);'],
+    ['-skew-6', '--un-skew-x:skewX(-6deg);--un-skew-y:skewY(-6deg);'],
+    ['-transform-skew-x-6', '--un-skew-x:skewX(-6deg);'],
+    // arbitrary values, fractions and explicit units
+    ['-rotate-x-[30deg]', '--un-rotate-x:rotateX(-30deg);'],
+    ['-skew-y-[10deg]', '--un-skew-y:skewY(-10deg);'],
+    ['-rotate-z-1.5deg', '--un-rotate-z:rotateZ(-1.5deg);'],
+    ['-skew-y-0.5', '--un-skew-y:skewY(-0.5deg);'],
+    // an already negative angle flips back
+    ['-rotate-x-[-45deg]', '--un-rotate-x:rotateX(45deg);'],
+    ['-skew-x-[-6deg]', '--un-skew-x:skewX(6deg);'],
+  ])('negates %s', async (utility, declarations) => {
+    expect(await generate(utility)).toContain(rule(`.${escapeSelector(utility)}`, declarations))
+  })
+
+  it.each([
+    ['rotate-x-45', '--un-rotate-x:rotateX(45deg);'],
+    ['skew-y-6', '--un-skew-y:skewY(6deg);'],
+  ])('leaves the positive %s untouched', async (utility, declarations) => {
+    expect(await generate(utility)).toContain(rule(`.${escapeSelector(utility)}`, declarations))
+  })
+
+  // #5442 reports variants explicitly
+  it.each([
+    ['hover:-skew-x-6', '--un-skew-x:skewX(-6deg);'],
+    ['hover:-rotate-x-[30deg]', '--un-rotate-x:rotateX(-30deg);'],
+  ])('negates %s under a variant', async (utility, declarations) => {
+    expect(await generate(utility)).toContain(rule(`.${escapeSelector(utility)}:hover`, declarations))
+  })
+
+  it.each([
+    ['-rotate-x-[var(--a)]', '--un-rotate-x:calc(var(--a) * -1);'],
+    ['-skew-x-[var(--a)]', '--un-skew-x:calc(var(--a) * -1);'],
+    ['-rotate-x-[calc(45deg+1deg)]', '--un-rotate-x:calc(calc(45deg + 1deg) * -1);'],
+  ])('falls back to `calc()` for %s', async (utility, declarations) => {
+    expect(await generate(utility)).toContain(rule(`.${escapeSelector(utility)}`, declarations))
+  })
+
+  it('negates only the leading function of the value', async () => {
+    expect(await generate('-[--fx:rotateX(45deg)_rotateY(10deg)]'))
+      .toContain('--fx:rotateX(-45deg) rotateY(10deg)')
+  })
+
+  it('drops the rule instead of clobbering a non-leading function', async () => {
+    // an unanchored match used to emit only `hue-rotate(-30deg)` and silently drop
+    // `blur(2px)`; not negating at all is the safer behavior
+    expect(await generate('-[--fx:blur(2px)_hue-rotate(30deg)]')).toBe('')
+  })
+
+  it.each([
+    '"rotateX(10deg)"',
+    '"skewY(6deg)"',
+    '"hue-rotate(90deg)"',
+  ])('keeps the string literal %s inside a negated rule', async (content) => {
+    const customUno = await createGenerator({
+      presets: [presetWind4()],
+      rules: [
+        ['shield', { 'margin-left': '1rem', content }],
+      ],
     })
 
-    it.each([
-      ['-rotate-x-[var(--a)]', '--un-rotate-x:calc(var(--a) * -1)'],
-      ['-skew-x-[var(--a)]', '--un-skew-x:calc(var(--a) * -1)'],
-      ['-rotate-x-[calc(45deg+1deg)]', '--un-rotate-x:calc(calc(45deg + 1deg) * -1)'],
-    ])('falls back to `calc()` for %s', async (utility, declaration) => {
-      expect(await generate(utility)).toContain(declaration)
-    })
+    const { css } = await customUno.generate('-shield', { preflights: false })
+    expect(css).toContain(`.-shield{margin-left:-1rem;content:${content};}`)
+  })
 
-    it('negates only the function that starts the value', async () => {
-      expect(await generate('-[--fx:rotateX(45deg)_rotateY(10deg)]'))
-        .toContain('--fx:rotateX(-45deg) rotateY(10deg)')
-    })
+  it('keeps `hue-rotate` working', async () => {
+    expect(await generate('-hue-rotate-90')).toContain('--un-hue-rotate:hue-rotate(-90deg)')
+  })
 
-    it('keeps function-like text that does not start the value', async () => {
-      const customUno = await createGenerator({
-        presets: [presetWind4()],
-        rules: [
-          ['shift', { 'margin-left': '1rem', 'content': '"rotateX(10deg)"' }],
-          ['shift-skew', { 'margin-left': '1rem', 'content': '"skewY(6deg)"' }],
-        ],
-      })
-
-      const { css } = await customUno.generate(['-shift', '-shift-skew'], { preflights: false })
-      expect(css).toContain('content:"rotateX(10deg)"')
-      expect(css).toContain('content:"skewY(6deg)"')
-    })
-
-    it('keeps `hue-rotate` working', async () => {
-      expect(await generate('-hue-rotate-90')).toContain('--un-hue-rotate:hue-rotate(-90deg)')
-    })
-
-    it('handles leading whitespace consistently across value kinds', async () => {
-      expect(await generate('-[--angle:_30deg]')).toContain('--angle:-30deg')
-      expect(await generate('-[--calc:_calc(1deg+1deg)]')).toContain('--calc:calc(calc(1deg + 1deg) * -1)')
-      expect(await generate('-[--zero:_0]')).toBe('')
-    })
+  it('negates leading whitespace consistently across value kinds', async () => {
+    expect(await generate('-[--angle:_30deg]')).toContain('--angle:-30deg')
+    expect(await generate('-[--calc:_calc(1deg+1deg)]')).toContain('--calc:calc(calc(1deg + 1deg) * -1)')
+    expect(await generate('-[--zero:_0]')).toBe('')
   })
 })
